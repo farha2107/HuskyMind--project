@@ -5,8 +5,10 @@ import { useApiKey } from '@/context/ApiKeyContext';
 import { Key, ShieldCheck, ExternalLink, Lock } from 'lucide-react';
 
 export default function ApiKeyModal() {
-    const { apiKey, saveApiKey, isValid } = useApiKey();
+    const { apiKey, saveApiKey, isValid, updateUserName } = useApiKey();
     const [inputKey, setInputKey] = useState('');
+    const [inputName, setInputName] = useState('');
+    const [step, setStep] = useState<'key' | 'name'>('key');
     const [error, setError] = useState('');
 
     // If key exists and is valid, don't show modal
@@ -14,11 +16,22 @@ export default function ApiKeyModal() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (inputKey.length < 30 || !inputKey.startsWith('AIza')) {
-            setError('Invalid Key format. Must start with "AIza".');
-            return;
+
+        if (step === 'key') {
+            if (inputKey.length < 30 || !inputKey.startsWith('AIza')) {
+                setError('Invalid Key format. Must start with "AIza".');
+                return;
+            }
+            setStep('name');
+            setError('');
+        } else {
+            if (!inputName.trim()) {
+                setError('Codename required.');
+                return;
+            }
+            updateUserName(inputName);
+            saveApiKey(inputKey);
         }
-        saveApiKey(inputKey);
     };
 
     return (
@@ -45,17 +58,30 @@ export default function ApiKeyModal() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Enter Gemini API Key</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
+                            {step === 'key' ? 'ENTER GEMINI API KEY' : 'ENTER CODENAME'}
+                        </label>
                         <div className="relative">
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                            <input
-                                type="password"
-                                value={inputKey}
-                                onChange={(e) => { setInputKey(e.target.value); setError(''); }}
-                                placeholder="AIzaSy..."
-                                className="w-full bg-black/50 border border-gray-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-cyan-500 outline-none transition-all font-mono text-sm shadow-inner"
-                                autoFocus
-                            />
+                            {step === 'key' ? (
+                                <input
+                                    type="password"
+                                    value={inputKey}
+                                    onChange={(e) => { setInputKey(e.target.value); setError(''); }}
+                                    placeholder="AIzaSy..."
+                                    className="w-full bg-black/50 border border-gray-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-cyan-500 outline-none transition-all font-mono text-sm shadow-inner"
+                                    autoFocus
+                                />
+                            ) : (
+                                <input
+                                    type="text"
+                                    value={inputName}
+                                    onChange={(e) => { setInputName(e.target.value); setError(''); }}
+                                    placeholder="Commander..."
+                                    className="w-full bg-black/50 border border-gray-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-cyan-500 outline-none transition-all font-mono text-sm shadow-inner"
+                                    autoFocus
+                                />
+                            )}
                         </div>
                         {error && <p className="text-red-400 text-xs ml-1 animate-pulse">{error}</p>}
                     </div>
@@ -66,17 +92,28 @@ export default function ApiKeyModal() {
                             className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-cyan-900/20 active:scale-95 flex items-center justify-center gap-2"
                         >
                             <ShieldCheck size={18} />
-                            AUTHENTICATE SESSION
+                            {step === 'key' ? 'VERIFY KEY' : 'AUTHENTICATE SESSION'}
                         </button>
 
-                        <a
-                            href="https://aistudio.google.com/app/apikey"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-center text-xs text-gray-600 hover:text-cyan-400 transition-colors flex items-center justify-center gap-1"
-                        >
-                            Get a free Gemini API Key <ExternalLink size={10} />
-                        </a>
+                        {step === 'key' && (
+                            <a
+                                href="https://aistudio.google.com/app/apikey"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-center text-xs text-gray-600 hover:text-cyan-400 transition-colors flex items-center justify-center gap-1"
+                            >
+                                Get a free Gemini API Key <ExternalLink size={10} />
+                            </a>
+                        )}
+                        {step === 'name' && (
+                            <button
+                                type="button"
+                                onClick={() => setStep('key')}
+                                className="text-center text-xs text-gray-500 hover:text-white transition-colors"
+                            >
+                                Back to Key Entry
+                            </button>
+                        )}
                     </div>
                 </form>
 

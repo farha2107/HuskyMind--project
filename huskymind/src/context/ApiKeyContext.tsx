@@ -7,20 +7,28 @@ interface ApiKeyContextType {
     saveApiKey: (key: string) => void;
     clearApiKey: () => void;
     isValid: boolean;
+    userName: string;
+    updateUserName: (name: string) => void;
 }
 
 const ApiKeyContext = createContext<ApiKeyContextType | undefined>(undefined);
 
 export function ApiKeyProvider({ children }: { children: React.ReactNode }) {
     const [apiKey, setApiKey] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string>("Alex Student");
     const [isValid, setIsValid] = useState(false);
 
     useEffect(() => {
         // Load on mount
-        const stored = localStorage.getItem('husky_gemini_key');
-        if (stored) {
-            setApiKey(stored);
+        const storedKey = localStorage.getItem('husky_gemini_key');
+        const storedName = localStorage.getItem('husky_user_name');
+
+        if (storedKey) {
+            setApiKey(storedKey);
             setIsValid(true);
+        }
+        if (storedName) {
+            setUserName(storedName);
         }
     }, []);
 
@@ -31,6 +39,12 @@ export function ApiKeyProvider({ children }: { children: React.ReactNode }) {
         setIsValid(true);
     };
 
+    const updateUserName = (name: string) => {
+        if (!name.trim()) return;
+        localStorage.setItem('husky_user_name', name);
+        setUserName(name);
+    };
+
     const clearApiKey = () => {
         localStorage.removeItem('husky_gemini_key');
         setApiKey(null);
@@ -38,7 +52,7 @@ export function ApiKeyProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <ApiKeyContext.Provider value={{ apiKey, saveApiKey, clearApiKey, isValid }}>
+        <ApiKeyContext.Provider value={{ apiKey, saveApiKey, clearApiKey, isValid, userName, updateUserName }}>
             {children}
         </ApiKeyContext.Provider>
     );

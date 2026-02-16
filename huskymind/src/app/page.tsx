@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, Briefcase, BrainCircuit, Gamepad2, Sparkles, ArrowRight, Activity, Globe, Lock, Shield, Zap, Search, User, BookOpen, Layers, Cpu, Terminal, Disc, Dna, Dog, Share2, Database, Code, Download, Fingerprint, Scan, Send, Maximize2, Minimize2, ChevronRight, Move, Grid, Rocket } from "lucide-react";
+import { FileText, Briefcase, BrainCircuit, Gamepad2, Sparkles, ArrowRight, Activity, Globe, Lock, Shield, Zap, Search, User, BookOpen, Layers, Cpu, Terminal, Disc, Dna, Dog, Share2, Database, Code, Download, Fingerprint, Scan, Send, Maximize2, Minimize2, ChevronRight, Move, Grid, Rocket, LogOut } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import StarBackground from "@/components/ui/StarBackground";
 import NavigationDock from "@/components/layout/NavigationDock";
@@ -18,6 +18,8 @@ import PortfolioHub from "@/components/ui/PortfolioHub";
 import CoursesHub from "@/components/ui/CoursesHub";
 import GenesisArchitect from "@/components/ui/GenesisArchitect";
 import { useApiKey } from "@/context/ApiKeyContext";
+import AdvancedDashboard from "@/components/dashboard/AdvancedDashboard";
+import LandingPage from "@/components/landing/LandingPage";
 
 
 // --- REUSABLE COMPONENTS ---
@@ -568,10 +570,14 @@ const ResumeScanner = () => {
 // --- MAIN PAGE COMPONENT ---
 
 export default function Home() {
-  const { apiKey } = useApiKey();
+  const { apiKey, saveApiKey, clearApiKey, userName, updateUserName } = useApiKey();
   const PUBLIC_GEMINI_KEY = apiKey || ""; // Dynamic BYOK Key
 
+  // ---------------------------------------------------------
   const [activeView, setActiveView] = useState('dashboard');
+  const [tempKey, setTempKey] = useState("");
+  const [tempName, setTempName] = useState("");
+  const [loginStep, setLoginStep] = useState<'key' | 'name'>('key'); // 'key' -> 'name' -> done
   const [isPublished, setIsPublished] = useState(false);
 
   // ---------------------------------------------------------
@@ -1612,7 +1618,7 @@ ${certs}
 
   return (
     <main className="min-h-screen w-full bg-[#0a0b1e] text-white overflow-x-hidden relative flex flex-col pl-64">
-      <StarBackground className={['mentor', 'skill-gap'].includes(activeView) ? "opacity-100" : "opacity-0"} />
+      <StarBackground className="opacity-100" />
       <div className="grain" />
       <NavigationDock activeView={activeView} setActiveView={setActiveView} />
 
@@ -1622,1040 +1628,781 @@ ${certs}
       </div>
 
       {activeView === 'dashboard' && (
-        <div className="space-y-8 animate-in fade-in duration-500">
-          {/* 1. HERO SECTION: SPATIAL MISSION CONTROL (PRESERVED) */}
-          <section className="w-full min-h-[90vh] flex flex-col lg:flex-row items-center justify-between px-6 lg:px-12 py-20 relative z-10 overflow-hidden lg:overflow-visible">
-
-            {/* Left Col: Text & Input */}
-            <div className="flex-1 flex flex-col items-start text-left z-20 max-w-2xl px-4 lg:pl-20 pt-10 lg:pt-0">
-              <div className="mb-6 px-3 py-1 glass-panel rounded-full inline-flex items-center gap-2 self-start border border-white/10">
-                <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse"></span>
-                <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">System Operational</span>
+        !apiKey ? (
+          <LandingPage onLogin={(key, name) => {
+            updateUserName(name);
+            saveApiKey(key);
+          }} />
+        ) : (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            {/* 1. HERO SECTION: SPATIAL MISSION CONTROL (PRESERVED) */}
+            {/* TOP STATUS BAR */}
+            <div className="hidden">
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> SYSTEM: ONLINE</span>
+                <span className="flex items-center gap-1.5 hidden sm:flex"><Zap size={10} /> INTELLIGENCE: ACTIVE</span>
               </div>
-
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40 mb-6 leading-[1.1] tracking-tight text-left">
-                Your AI Career <br /> <span className="text-white">Operating System</span>
-              </h1>
-
-              <p className="text-lg text-white/50 font-light leading-relaxed mb-10 max-w-md text-left">
-                Bring Your Own Key (BYOK) to unlock a <span className="text-neon-cyan font-medium">Spatial Web Experience</span> that adapts to your growth.
-              </p>
-
-              <div className="w-full relative group max-w-sm">
-                {/* Connector Line */}
-                <div className="absolute top-1/2 right-[-33px] w-[33px] h-px bg-white/20 hidden lg:block" />
-                <div className="absolute top-1/2 right-[-4px] w-1 h-1 rounded-full bg-neon-cyan hidden lg:block" style={{ boxShadow: "0 0 10px #00f3ff" }} />
-
-                <GlassCard className="!p-1.5 !rounded-full flex items-center gap-2 border border-white/10 bg-black/40">
-                  <div className="pl-3 text-neon-cyan"><Sparkles size={16} /></div>
-                  <input
-                    type="password"
-                    placeholder="sk-..."
-                    className="bg-transparent border-none outline-none text-white w-full font-mono text-xs placeholder-white/20 h-10"
-                  />
-                  <button className="h-10 px-6 rounded-full bg-white/10 hover:bg-electric-purple text-white text-xs font-bold tracking-wide transition-all duration-300 flex items-center gap-2 border border-white/5 hover:border-electric-purple/50 whitespace-nowrap">
-                    INITIALIZE <ArrowRight size={14} />
-                  </button>
-                </GlassCard>
+              <div className="hidden md:flex items-center gap-8 text-white/20">
+                <span className="flex items-center gap-1.5"><Globe size={10} /> GLOBAL NODES: 12,402</span>
+                <span>MARKET: BULLISH</span>
               </div>
+              <div className="flex items-center gap-2 text-white/30">
+                <span>POWERED BY HUSKYMIND GROUP</span>
+              </div>
+            </div>
 
-              {/* SYSTEM REPORT / RESUME BUTTON */}
-              <div className="mt-12 w-full max-w-sm">
-                <a
-                  href="https://drive.google.com/file/d/1W63TjeCr1yRro1kZqoyAsYP_WL2XIGWA/view?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative flex items-center justify-center gap-3 overflow-hidden rounded-lg border border-cyan-500/50 bg-cyan-500/10 px-8 py-4 text-cyan-400 transition-all duration-300 hover:bg-cyan-500/20 hover:text-white"
+            <section className="w-full min-h-[80vh] flex flex-col lg:flex-row items-center justify-between text-center lg:text-left px-6 lg:px-12 relative z-10 py-20 lg:py-0">
+
+              {/* Left Col: Text & Welcome */}
+              <div className="flex-1 flex flex-col items-start text-left z-20 max-w-xl pt-10 lg:pt-0 lg:mr-12">
+                <div className="mb-6 px-3 py-1 glass-panel rounded-full inline-flex items-center gap-2 self-start border border-white/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse"></span>
+                  <span className="text-[10px] font-mono text-white/60 uppercase tracking-widest">System Operational</span>
+                </div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40 mb-6 leading-[1.1] tracking-tight text-left">
+                  Welcome back, <br /> <span className="text-neon-cyan">{userName}</span>
+                </h1>
+                <p className="text-lg text-white/50 font-light leading-relaxed mb-10 max-w-md text-left">
+                  Your <span className="text-white font-medium">Neural Career Operating System</span> is active. Access your modules below.
+                </p>
+                <button
+                  onClick={() => { if (confirm('Disconnect Neural Link?')) clearApiKey(); }}
+                  className="px-6 py-3 rounded-lg bg-white/5 hover:bg-red-500/10 text-white/60 hover:text-red-400 text-xs font-bold tracking-wide transition-all border border-white/5 hover:border-red-500/20 flex items-center justify-center gap-2"
                 >
-                  {/* Scan Animation */}
-                  <motion.div
-                    className="absolute inset-y-0 w-12 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent skew-x-12 blur-sm"
-                    animate={{ left: ["-100%", "200%"] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
-                  />
-
-                  <Download size={16} className="relative z-10" />
-                  <span className="relative z-10 font-mono text-xs font-bold tracking-widest group-hover:hidden">GENERATE SYSTEM_REPORT.PDF</span>
-                  <span className="relative z-10 hidden font-mono text-xs font-bold tracking-widest text-neon-cyan animate-pulse group-hover:block">EXTRACTING DATA...</span>
-                </a>
-
-                <div className="flex justify-between mt-3 px-1">
-                  <span className="text-[9px] font-mono text-cyan-500/50 tracking-widest">ENCRYPTION: AES-256</span>
-                  <span className="text-[9px] font-mono text-cyan-500/50 tracking-widest flex items-center gap-1">
-                    STATUS: READY <span className="w-1 h-1 rounded-full bg-cyan-500 animate-pulse" />
-                  </span>
-                </div>
+                  <LogOut size={14} /> DISCONNECT SESSION
+                </button>
               </div>
-            </div>
 
-            {/* Right Col: SPATIAL UI (The 'Husky' Layout) */}
-            <div className="relative flex-1 flex items-center justify-center lg:justify-start lg:pl-12 perspective-[1200px] mt-16 lg:mt-0 z-20 h-[600px] w-full scale-[0.6] sm:scale-[0.8] lg:scale-100 origin-center lg:origin-left">
-              <div className="relative w-full h-full max-w-2xl flex items-center justify-center">
+              {/* Right Col: SPATIAL UI (RESTORED) */}
+              <div className="relative flex-1 flex items-center justify-center lg:justify-start lg:pl-12 perspective-[1200px] mt-16 lg:mt-0 z-20 h-[600px] w-full scale-[0.6] sm:scale-[0.8] lg:scale-100 origin-center lg:origin-left">
+                <div className="relative w-full h-full max-w-2xl flex items-center justify-center">
 
-                {/* Background Glow */}
-                <div className="absolute w-[500px] h-[500px] bg-electric-purple/10 rounded-full blur-[100px] animate-pulse" />
+                  {/* Background Glow */}
+                  <div className="absolute w-[500px] h-[500px] bg-electric-purple/10 rounded-full blur-[100px] animate-pulse" />
 
 
-                {/* CARD 1: Resume Studio (Floating Top Left) */}
-                <div ref={float1.ref} className="absolute top-0 left-[-40px] lg:left-[-20px] z-30">
-                  <GlassCard className="p-4 w-72 border border-white/20 bg-black/40 backdrop-blur-xl shadow-xl">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 rounded bg-pink-500/20 text-pink-500"><FileText size={18} /></div>
-                      <div className="text-sm font-bold text-white">Resume Studio</div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full w-3/4 bg-pink-500" />
+                  {/* CARD 1: Resume Studio (Floating Top Left) */}
+                  <div ref={float1.ref} className="absolute top-0 left-[-40px] lg:left-[-20px] z-30">
+                    <GlassCard className="p-4 w-72 border border-white/20 bg-black/40 backdrop-blur-xl shadow-xl">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 rounded bg-pink-500/20 text-pink-500"><FileText size={18} /></div>
+                        <div className="text-sm font-bold text-white">Resume Studio</div>
                       </div>
-                      <div className="text-[10px] text-white/50 flex justify-between">
-                        <span>Optimizing...</span>
-                        <span>78%</span>
+                      <div className="space-y-2">
+                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full w-3/4 bg-pink-500" />
+                        </div>
+                        <div className="text-[10px] text-white/50 flex justify-between">
+                          <span>Optimizing...</span>
+                          <span>78%</span>
+                        </div>
                       </div>
-                    </div>
-                  </GlassCard>
-                </div>
-
-                {/* CARD 4: Skill Intelligence (Neural Network) */}
-                <div ref={float4.ref} className="absolute top-[-80px] right-[-60px] lg:right-[-40px] z-20">
-                  <GlassCard className="p-4 w-[340px] border border-white/20 bg-[#0a0b1e]/90 backdrop-blur-xl">
-                    <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
-                      <div className="flex items-center gap-2">
-                        <BrainCircuit size={16} className="text-electric-purple" />
-                        <span className="text-xs font-bold text-white tracking-wider">NEURAL_SKILL_NET</span>
-                      </div>
-                      <div className="flex gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse" />
-                        <span className="text-[8px] font-mono text-neon-cyan">ONLINE</span>
-                      </div>
-                    </div>
-                    <NeuralSkillNetwork />
-                  </GlassCard>
-                </div>
-
-                {/* CARD 2: Dashboard/Main (Center - Expanded) */}
-                <div ref={float2.ref} className="absolute top-28 left-0 lg:left-10 z-10">
-                  <GlassCard className="p-6 w-[480px] lg:w-[500px] border border-white/20 bg-[#0a0b1e]/80 backdrop-blur-2xl shadow-2xl shadow-cyan-500/10">
-                    <div className="flex justify-between items-center mb-6">
-                      <div className="flex items-center gap-3 text-neon-cyan">
-                        <Sparkles size={20} />
-                        <span className="font-bold tracking-wider text-sm">HUSKYMIND_OS</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="w-2 h-2 rounded-full bg-red-500/50" />
-                        <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
-                        <div className="w-2 h-2 rounded-full bg-green-500/50" />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-                        <div className="text-xs text-white/50 mb-1">Opportunities</div>
-                        <div className="text-2xl font-bold text-white">1,204</div>
-                      </div>
-                      <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-                        <div className="text-xs text-white/50 mb-1">Skill Match</div>
-                        <div className="text-2xl font-bold text-neon-cyan">94%</div>
-                      </div>
-                    </div>
-
-                    <SystemLog />
-                  </GlassCard>
-                </div>
-
-                {/* CARD 5: Global Clock (Bottom Left) */}
-                <div ref={float5.ref} className="absolute bottom-10 left-[-30px] z-30">
-                  <GlassCard className="p-4 w-64 border border-white/20 bg-black/60 backdrop-blur-xl">
-                    <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2">
-                      <Globe size={14} className="text-neon-cyan" />
-                      <span className="text-xs font-bold text-white tracking-wider">GLOBAL_SYNC</span>
-                    </div>
-                    <WorldClock />
-                  </GlassCard>
-                </div>
-
-                {/* CARD 3: Identity/User (Floating Bottom Right) */}
-                <div ref={float3.ref} className="absolute bottom-24 right-[-30px] lg:right-[-10px] z-30">
-                  <GlassCard className="p-4 w-60 border border-white/20 bg-black/40 backdrop-blur-xl flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-neon-cyan to-blue-500 p-0.5">
-                      <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                        <User size={16} className="text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white">Alex Chen</div>
-                      <div className="text-[10px] text-neon-cyan">Full Stack Dev</div>
-                    </div>
-                  </GlassCard>
-                </div>
-
-              </div>
-            </div>
-          </section>
-
-          {/* 2. CORE FEATURES (Updated Titles) */}
-          <section className="w-full px-12 py-12 relative z-10 border-t border-white/5 bg-[#0a0b1e]">
-            <h2 className="text-3xl font-bold text-white mb-8 max-w-7xl mx-auto px-6">Core Capabilities</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto px-6">
-              <FeatureCard icon={FileText} title="Resume Studio" desc="ATS Optimization." delay={0} sysId="SYS.RES" />
-              <FeatureCard icon={Layers} title="Portfolio Builder" desc="Showcase work." delay={1} sysId="SYS.PRT" />
-              <FeatureCard icon={BookOpen} title="Learning Mode" desc="Skill gaps." delay={2} sysId="SYS.LRN" />
-              <FeatureCard icon={Gamepad2} title="Simulation Hub" desc="AI Roleplay." delay={3} sysId="SYS.SIM" />
-            </div>
-          </section>
-
-          {/* 3. GLOBAL OPPORTUNITIES (War Room Dashboard) */}
-          <section className="w-full py-16 px-6 relative z-10 bg-[#0a0b1e]">
-            <div className="max-w-7xl mx-auto h-[600px] bg-[#0c0d24]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden relative shadow-2xl flex">
-              {/* Background Grid */}
-              <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10 pointer-events-none" />
-
-              {/* Left Panel: Live Stats */}
-              <div className="w-1/3 h-full border-r border-white/10 p-8 flex flex-col justify-between relative z-10 bg-black/20">
-                <div>
-                  <div className="text-xs font-mono text-neon-cyan tracking-widest mb-4">MARKE_INTELLIGENCE</div>
-                  <h2 className="text-3xl font-bold text-white leading-tight mb-6">Global Opportunities <br />Engine</h2>
-                  <p className="text-white/50 text-sm leading-relaxed mb-8">Real-time analysis of job markets, salary curves, and remote work demand.</p>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:border-neon-cyan/30 transition-colors">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-white/70">Remote Demand</span>
-                      <Activity size={14} className="text-green-400" />
-                    </div>
-                    <div className="text-2xl font-bold text-white">+14.2% <span className="text-xs text-green-400 font-normal">v/s last mo</span></div>
+                    </GlassCard>
                   </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:border-electric-purple/30 transition-colors">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-white/70">Salary Gravity</span>
-                      <Zap size={14} className="text-yellow-400" />
-                    </div>
-                    <div className="text-2xl font-bold text-white">$160k <span className="text-xs text-white/30 font-normal">avg. senior</span></div>
+
+                  {/* CARD 4: Skill Intelligence (Neural Network) */}
+                  <div ref={float4.ref} className="absolute top-[-80px] right-[-60px] lg:right-[-40px] z-20">
+                    <GlassCard className="p-4 w-[340px] border border-white/20 bg-[#0a0b1e]/90 backdrop-blur-xl">
+                      <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+                        <div className="flex items-center gap-2">
+                          <BrainCircuit size={16} className="text-electric-purple" />
+                          <span className="text-xs font-bold text-white tracking-wider">NEURAL_SKILL_NET</span>
+                        </div>
+                        <div className="flex gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-neon-cyan animate-pulse" />
+                          <span className="text-[8px] font-mono text-neon-cyan">ONLINE</span>
+                        </div>
+                      </div>
+                      <NeuralSkillNetwork />
+                    </GlassCard>
                   </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:border-pink-500/30 transition-colors">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-white/70">Hotspots</span>
-                      <Globe size={14} className="text-pink-400" />
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="text-xs px-2 py-1 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20">SF</span>
-                      <span className="text-xs px-2 py-1 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20">NY</span>
-                      <span className="text-xs px-2 py-1 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20">LDN</span>
-                    </div>
+
+                  {/* CARD 2: Dashboard/Main (Center - Expanded) */}
+                  <div ref={float2.ref} className="absolute top-28 left-0 lg:left-10 z-10">
+                    <GlassCard className="p-6 w-[480px] lg:w-[500px] border border-white/20 bg-[#0a0b1e]/80 backdrop-blur-2xl shadow-2xl shadow-cyan-500/10">
+                      <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-3 text-neon-cyan">
+                          <Sparkles size={20} />
+                          <span className="font-bold tracking-wider text-sm">HUSKYMIND_OS</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="w-2 h-2 rounded-full bg-red-500/50" />
+                          <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
+                          <div className="w-2 h-2 rounded-full bg-green-500/50" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                          <div className="text-xs text-white/50 mb-1">Opportunities</div>
+                          <div className="text-2xl font-bold text-white">1,204</div>
+                        </div>
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                          <div className="text-xs text-white/50 mb-1">Skill Match</div>
+                          <div className="text-2xl font-bold text-neon-cyan">94%</div>
+                        </div>
+                      </div>
+
+                      <SystemLog />
+                    </GlassCard>
                   </div>
-                </div>
-              </div>
 
-              {/* Right Panel: Holographic Map */}
-              <div className="flex-1 h-full relative overflow-hidden flex items-center justify-center bg-[#050614]">
-                <div className="absolute inset-0 opacity-20">
-                  <svg className="w-full h-full" viewBox="0 0 800 600">
-                    {/* Abstract Map Contours */}
-                    <path d="M100,200 Q200,100 400,200 T700,200" fill="none" stroke="white" strokeWidth="2" strokeDasharray="5,5" />
-                    <path d="M50,400 Q300,500 500,400 T750,450" fill="none" stroke="white" strokeWidth="2" strokeDasharray="5,5" />
-                    <path d="M200,100 L200,500" fill="none" stroke="white" strokeWidth="1" opacity="0.1" />
-                    <path d="M400,100 L400,500" fill="none" stroke="white" strokeWidth="1" opacity="0.1" />
-                    <path d="M600,100 L600,500" fill="none" stroke="white" strokeWidth="1" opacity="0.1" />
-                  </svg>
-                </div>
-
-                {/* Pulse Points */}
-                <div className="absolute top-[30%] left-[30%]">
-                  <div className="w-3 h-3 bg-neon-cyan rounded-full absolute" />
-                  <div className="w-3 h-3 bg-neon-cyan rounded-full animate-ping absolute" />
-                  <div className="absolute top-4 left-0 text-[10px] font-mono text-neon-cyan whitespace-nowrap">US-EAST (HIGH)</div>
-                </div>
-                <div className="absolute top-[40%] right-[30%]">
-                  <div className="w-3 h-3 bg-electric-purple rounded-full absolute" />
-                  <div className="w-3 h-3 bg-electric-purple rounded-full animate-ping absolute" />
-                  <div className="absolute top-4 left-0 text-[10px] font-mono text-electric-purple whitespace-nowrap">EU-CENTRAL (MED)</div>
-                </div>
-
-                {/* Scanning Laser */}
-                <motion.div
-                  className="absolute top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-cyan-500 to-transparent shadow-[0_0_20px_#22d3ee] z-20"
-                  animate={{ left: ["0%", "100%"] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* 4. PROFESSIONAL DNA (Hybrid Sequence) */}
-          <section className="w-full py-16 px-6 relative z-10 bg-[#0a0b1e] border-t border-white/5">
-            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-0">
-              {/* Left DNA: Cloud */}
-              <div className="text-center lg:text-right w-full lg:w-1/3 lg:pr-12">
-                <h3 className="text-2xl font-bold text-white mb-2">Cloud Admin</h3>
-                <p className="text-cyan-400 font-mono text-sm mb-4">SEQUENCE: A-W-S</p>
-                <ul className="space-y-2 text-white/50 text-sm flex flex-col items-center lg:items-end">
-                  <li className="flex gap-2 items-center"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500" /> Kubernetes</li>
-                  <li className="flex gap-2 items-center"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500" /> Terraform</li>
-                  <li className="flex gap-2 items-center"><span className="w-1.5 h-1.5 rounded-full bg-cyan-500" /> Docker</li>
-                </ul>
-              </div>
-
-              {/* Center: The Helix */}
-              <div className="flex-1 flex justify-center relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0b1e] via-transparent to-[#0a0b1e] z-10" />
-                <DNAHelix />
-              </div>
-
-              {/* Right DNA: Java */}
-              <div className="text-left w-1/3 pl-12">
-                <h3 className="text-2xl font-bold text-white mb-2">Java Engineer</h3>
-                <p className="text-electric-purple font-mono text-sm mb-4">SEQUENCE: J-V-M</p>
-                <ul className="space-y-2 text-white/50 text-sm">
-                  <li className="flex gap-2 items-center"><span className="w-1.5 h-1.5 rounded-full bg-electric-purple" /> Spring Boot</li>
-                  <li className="flex gap-2 items-center"><span className="w-1.5 h-1.5 rounded-full bg-electric-purple" /> Microservices</li>
-                  <li className="flex gap-2 items-center"><span className="w-1.5 h-1.5 rounded-full bg-electric-purple" /> Kafka</li>
-                </ul>
-              </div>
-            </div>
-          </section>
-
-          {/* 5. ENTERPRISE CLOUD MONITOR */}
-          <section className="w-full max-w-7xl mx-auto px-4 py-24">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden relative">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-white">Infrastructure Health</h3>
-                  <p className="text-sm text-slate-400">Azure Zone: South India (Chennnai/Nellore)</p>
-                </div>
-                <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-mono animate-pulse">
-                  SYSTEM OPTIMAL
-                </div>
-              </div>
-
-              {/* Grid Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Card 1: Compute */}
-                <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-cyan-500/30 transition-colors group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 group-hover:text-cyan-400 transition-colors">
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>
-                    </div>
-                    <span className="text-xs font-mono text-green-400">● Running</span>
+                  {/* CARD 5: Global Clock (Bottom Left) */}
+                  <div ref={float5.ref} className="absolute bottom-10 left-[-30px] z-30">
+                    <GlassCard className="p-4 w-64 border border-white/20 bg-black/60 backdrop-blur-xl">
+                      <div className="flex items-center gap-2 mb-3 border-b border-white/10 pb-2">
+                        <Globe size={14} className="text-neon-cyan" />
+                        <span className="text-xs font-bold text-white tracking-wider">GLOBAL_SYNC</span>
+                      </div>
+                      <WorldClock />
+                    </GlassCard>
                   </div>
-                  <div className="text-2xl font-bold text-white mb-1">42% Load</div>
-                  <div className="text-xs text-slate-500 font-mono">vm-series-a2 | 8 vCPUs</div>
-                </div>
 
-                {/* Card 2: Storage */}
-                <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-purple-500/30 transition-colors group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400 group-hover:text-purple-300 transition-colors">
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
-                    </div>
-                    <span className="text-xs font-mono text-green-400">● Encrypted</span>
+                  {/* CARD 3: Identity/User (Floating Bottom Right) */}
+                  <div ref={float3.ref} className="absolute bottom-24 right-[-30px] lg:right-[-10px] z-30">
+                    <GlassCard className="p-4 w-60 border border-white/20 bg-black/40 backdrop-blur-xl flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-neon-cyan to-blue-500 p-0.5">
+                        <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+                          <User size={16} className="text-white" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white">Alex Chen</div>
+                        <div className="text-[10px] text-neon-cyan">Full Stack Dev</div>
+                      </div>
+                    </GlassCard>
                   </div>
-                  <div className="text-2xl font-bold text-white mb-1">99.9% Uptime</div>
-                  <div className="text-xs text-slate-500 font-mono">blob-storage-01 | Hot Tier</div>
-                </div>
 
-                {/* Card 3: Network */}
-                <div className="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-orange-500/30 transition-colors group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-2 bg-orange-500/10 rounded-lg text-orange-400 group-hover:text-orange-300 transition-colors">
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <span className="text-xs font-mono text-green-400">● 14ms Latency</span>
-                  </div>
-                  <div className="text-2xl font-bold text-white mb-1">0 Packet Loss</div>
-                  <div className="text-xs text-slate-500 font-mono">VNET-04 | Secure Gateway</div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* 6. MODULAR ARCHITECTURE (Replaces Husky Core Orb) */}
-          <section className="w-full py-24 bg-[#050614] relative overflow-hidden flex flex-col items-center justify-center">
-            {/* Connecting Lines Upwards */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-32 z-0">
-              <div className="absolute inset-y-0 left-[20%] w-px bg-gradient-to-b from-transparent via-cyan-500/20 to-cyan-500/50" />
-              <div className="absolute inset-y-0 right-[20%] w-px bg-gradient-to-b from-transparent via-cyan-500/20 to-cyan-500/50" />
-            </div>
-
-            {/* TERMINAL STATUS (Required) */}
-            <TypewriterTerminal />
-
-            <div className="relative w-full max-w-5xl h-[500px] flex items-center justify-center">
-
-              {/* Central Husky Node */}
-              <div className="relative w-40 h-40 z-20 flex items-center justify-center">
-                <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-xl animate-pulse" />
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#1a1b3a] to-black border border-cyan-500/50 flex items-center justify-center shadow-[0_0_50px_rgba(34,211,238,0.2)]">
-                  <Dog size={64} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-                </div>
-                {/* Rotating Rings */}
-                <div className="absolute inset-[-20px] rounded-full border border-white/10 border-dashed animate-[spin_20s_linear_infinite]" />
-              </div>
-
-              {/* Satellite Nodes */}
-              {[
-                { title: "Resume Studio", x: -250, y: -100, icon: FileText, action: () => setActiveView('war-room') },
-                { title: "Simulation Hub", x: -180, y: 120, icon: Gamepad2, action: () => setActiveView('assessments') },
-                { title: "Algo Career Agent", x: -300, y: 20, icon: BrainCircuit, action: () => setActiveView('mentor') },
-                { title: "Enterprise Hub", x: 250, y: -100, icon: Briefcase, action: () => console.log('Enterprise') },
-                { title: "Quick Tracks", x: 180, y: 120, icon: Zap, action: () => setActiveView('skill-gap') },
-                { title: "Portfolio Hub", x: 300, y: 20, icon: Share2, action: () => setActiveView('portfolio') },
-              ].map((node, i) => (
-                <React.Fragment key={i}>
-                  {/* Connection Line */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                    <line x1="50%" y1="50%" x2={`calc(50% + ${node.x}px)`} y2={`calc(50% + ${node.y}px)`} stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1" />
-                    <circle cx={`calc(50% + ${node.x * 0.5}px)`} cy={`calc(50% + ${node.y * 0.5}px)`} r="2" fill="#22d3ee">
-                      <animate attributeName="opacity" values="0;1;0" dur="2s" begin={`${i * 0.5}s`} repeatCount="indefinite" />
-                    </circle>
-                  </svg>
-
-                  {/* Node Card */}
-                  <motion.div
-                    onClick={node.action}
-                    className="absolute w-40 h-24 bg-[#0a0b1e]/90 backdrop-blur-md border border-white/10 rounded-xl flex flex-col items-center justify-center text-center p-3 shadow-lg z-10 cursor-pointer hover:border-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all group"
-                    style={{ x: node.x, y: node.y }}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <node.icon size={20} className="text-cyan-400 mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold text-white group-hover:text-cyan-300">{node.title}</span>
-                  </motion.div>
-                </React.Fragment>
-              ))}
-            </div>
-
-            {/* Architecture Text */}
-            <div className="relative z-10 text-center mt-12 mb-8">
-              <h2 className="text-xl font-light text-white tracking-widest uppercase">Fully Modular Plugin-Based Career OS Architecture</h2>
-            </div>
-
-            {/* Bottom Footer Text */}
-            <div className="text-center text-white/30 text-[10px] space-x-6 font-mono">
-              <a href="#" className="hover:text-white transition-colors">Careers</a>
-              <a href="#" className="hover:text-white transition-colors">HHD Career</a>
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-              <span>&copy; 2026 Husky Minds.</span>
-            </div>
-          </section>
-
-          {/* 6. BIOMETRIC HANDSHAKE - REMOVED */}
-          <section className="w-full py-24 bg-[#0a0b1e] border-t border-white/5 flex flex-col items-center justify-center relative z-20 min-h-[300px]">
-            {/* Empty Safe */}
-          </section>
-        </div>
-        /* END OF DASHBOARD VIEW */
+            {/* --- NEW ADVANCED DASHBOARD (Floating Grid) --- */}
+            <AdvancedDashboard />
+          </div>
+        )
       )}
-
       {/* --- VIEW 3: RESUME STUDIO --- */}
-      {activeView === 'resume' && (
-        <ResumeStudio />
-      )}
+      {
+        activeView === 'resume' && (
+          <ResumeStudio />
+        )
+      }
 
       {/* --- VIEW 2: ATS WAR ROOM --- */}
-      {activeView === 'war-room' && (
-        <div className="h-screen w-full overflow-hidden relative flex flex-col animate-in zoom-in-95 duration-300">
+      {
+        activeView === 'war-room' && (
+          <div className="h-screen w-full overflow-hidden relative flex flex-col animate-in zoom-in-95 duration-300">
 
-          {/* TACTICAL BACKGROUND */}
-          <TacticalGridBackground scanning={isAnalyzing || isOptimizing} />
+            {/* TACTICAL BACKGROUND */}
+            <TacticalGridBackground scanning={isAnalyzing || isOptimizing} />
 
-          {/* Close Button (Top Right) */}
-          <div className="absolute top-6 right-6 z-50">
-            <button
-              onClick={() => setActiveView('dashboard')}
-              className="px-4 py-2 bg-black/40 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-white/10 rounded-full text-xs font-mono transition-colors backdrop-blur-md"
-            >
-              EXIT WAR ROOM [ESC]
-            </button>
-          </div>
-
-          {/* THE ATS WAR ROOM UI (Scrollable) */}
-          <div className="flex-1 flex flex-col items-center p-12 relative z-10 overflow-y-auto custom-scrollbar">
-            <div className="flex items-center gap-4 mb-8">
-              <h2 className="text-3xl font-black text-white tracking-widest shrink-0">ATS WAR ROOM</h2>
-              <div className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-mono">
-                V2.1_TBF
-              </div>
+            {/* Close Button (Top Right) */}
+            <div className="absolute top-6 right-6 z-50">
+              <button
+                onClick={() => setActiveView('dashboard')}
+                className="px-4 py-2 bg-black/40 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-white/10 rounded-full text-xs font-mono transition-colors backdrop-blur-md"
+              >
+                EXIT WAR ROOM [ESC]
+              </button>
             </div>
 
-            {/* ATS V2: SPLIT VIEW CONTROLLER */}
-            <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 shrink-0">
-
-              {/* LEFT COLUMN: RESUME INPUT (Dynamic Modes) */}
-              <div className="flex flex-col h-[600px] perspective-1000">
-                {atsViewMode === 'upload' && (
-                  <div className="flex-1 flex flex-col gap-6 animate-in slide-in-from-left-8 duration-500">
-
-                    {/* OPTION A: UPLOAD PDF (HOLOGRAPHIC DROP ZONE) */}
-                    <div className="relative group flex-1">
-                      <div className="absolute inset-0 bg-cyan-500/5 blur-xl group-hover:bg-cyan-500/10 transition-colors duration-500" />
-
-                      <div
-                        className={`relative h-full border border-dashed rounded-2xl transition-all duration-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${resumeFile ? 'border-cyan-500 bg-cyan-950/30' : 'border-white/20 bg-black/40 hover:border-cyan-500/50 hover:bg-cyan-900/10'}`}
-                        onDragOver={(e) => { e.preventDefault(); }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          const file = e.dataTransfer.files[0];
-                          handleFileUpload(file);
-                        }}
-                        onClick={() => document.getElementById('resume-upload')?.click()}
-                      >
-                        {/* SCANNER LINE */}
-                        {!resumeFile && (
-                          <motion.div
-                            className="absolute top-0 w-full h-[2px] bg-cyan-500 shadow-[0_0_15px_#22d3ee] z-10 opacity-0 group-hover:opacity-100"
-                            animate={{ top: ["0%", "100%"] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                          />
-                        )}
-
-                        <input
-                          type="file"
-                          id="resume-upload"
-                          className="hidden"
-                          accept="application/pdf"
-                          onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
-                        />
-
-                        {resumeFile ? (
-                          <div className="text-center animate-in zoom-in relative z-20">
-                            <div className="w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-                              <FileText size={40} className="text-cyan-400" />
-                            </div>
-                            <p className="text-white font-bold text-xl tracking-wide">{resumeFile.name}</p>
-                            <div className="flex items-center justify-center gap-2 mt-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                              <p className="text-cyan-400 text-xs font-mono tracking-widest">PDF_SECURE // READY_TO_SCAN</p>
-                            </div>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setResumeFile(null); setResumeBase64(null); }}
-                              className="mt-8 px-6 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-full border border-red-500/20 transition-all hover:scale-105"
-                            >
-                              TERMINATE_FILE
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="text-center relative z-20">
-                            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/10 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10 transition-all duration-300">
-                              <Download size={32} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
-                            </div>
-                            <p className="text-slate-300 font-bold text-lg group-hover:text-white transition-colors tracking-wide">INITIALIZE UPLOAD</p>
-                            <p className="text-xs text-slate-500 mt-2 font-mono group-hover:text-cyan-500/70 transition-colors">DRAG_DROP_TARGET_ACQUIRED</p>
-                          </div>
-                        )}
-
-                        {/* CORNER ACCENTS */}
-                        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/10 group-hover:border-cyan-500/50 rounded-tl-lg transition-colors" />
-                        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/10 group-hover:border-cyan-500/50 rounded-tr-lg transition-colors" />
-                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/10 group-hover:border-cyan-500/50 rounded-bl-lg transition-colors" />
-                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/10 group-hover:border-cyan-500/50 rounded-br-lg transition-colors" />
-                      </div>
-                    </div>
-
-                    {/* OPTION B: IMPORT FROM PORTFOLIO */}
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
-                      <div className="relative flex justify-center">
-                        <span className="bg-black/40 px-4 text-[10px] text-slate-500 font-mono backdrop-blur-md">ALTERNATE_INPUT_SOURCE</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleImportPortfolio}
-                      className="py-5 rounded-xl bg-gradient-to-r from-electric-purple/10 to-transparent border border-electric-purple/30 hover:border-electric-purple/60 text-white font-bold flex items-center justify-center gap-3 transition-all group hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]"
-                    >
-                      <div className="p-1.5 bg-electric-purple/20 rounded text-electric-purple group-hover:text-white transition-colors">
-                        <Briefcase size={16} />
-                      </div>
-                      <span className="tracking-wide text-sm">IMPORT FROM PORTFOLIO HUB</span>
-                      <ArrowRight size={14} className="text-electric-purple/50 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                )}
-
-                {/* MODE: EDITOR (Raw Text) */}
-                {atsViewMode === 'editor' && (
-                  <div className="flex-1 flex flex-col bg-black/40 border border-white/20 rounded-xl overflow-hidden animate-in fade-in">
-                    <div className="p-3 bg-white/5 border-b border-white/10 flex justify-between items-center">
-                      <span className="text-xs font-bold text-cyan-400">RESUME_TEXT_EDITOR</span>
-                      <button onClick={() => setAtsViewMode('upload')} className="text-[10px] text-slate-400 hover:text-white">CANCEL</button>
-                    </div>
-                    <textarea
-                      className="flex-1 bg-transparent p-4 text-xs font-mono text-slate-300 outline-none resize-none leading-relaxed"
-                      value={resumeText}
-                      onChange={(e) => setResumeText(e.target.value)}
-                      placeholder="Paste your raw resume text here..."
-                    />
-                  </div>
-                )}
-
-                {/* MODE: COMPARISON (Original) */}
-                {atsViewMode === 'comparison' && (
-                  <div className="flex-1 flex flex-col bg-red-950/10 border border-red-500/30 rounded-xl overflow-hidden animate-in fade-in">
-                    <div className="p-3 bg-red-500/10 border-b border-red-500/20">
-                      <span className="text-xs font-bold text-red-400">ORIGINAL VERSION</span>
-                    </div>
-                    <div className="flex-1 p-4 overflow-y-auto custom-scrollbar text-xs font-mono text-slate-400 whitespace-pre-wrap relative bg-[#0a0a0a]">
-                      {resumeText ? (
-                        resumeText
-                      ) : resumeFile && resumeBase64 ? (
-                        <div className="absolute inset-0 w-full h-full flex flex-col bg-[#111111]">
-                          <div className="absolute top-0 right-0 left-0 bg-gradient-to-b from-black/80 to-transparent p-2 flex justify-between items-center z-10 pointer-events-none">
-                            <span className="text-[10px] font-bold text-white/50 bg-black/50 px-2 py-1 rounded backdrop-blur-md border border-white/10">
-                              {resumeFile.name}
-                            </span>
-                            <span className="text-[10px] font-bold text-red-400/50 bg-red-950/30 px-2 py-1 rounded backdrop-blur-md border border-red-500/20">
-                              READ-ONLY
-                            </span>
-                          </div>
-                          <iframe
-                            src={`data:application/pdf;base64,${resumeBase64}#toolbar=0&navpanes=0&scrollbar=0`}
-                            className="w-full flex-1 border-none bg-white opacity-90 hover:opacity-100 transition-opacity"
-                            title="Original Resume PDF"
-                          />
-                        </div>
-                      ) : (
-                        <div className="text-center mt-20 opacity-30 text-[10px] font-mono">NO CONTENT LOADED</div>
-                      )}
-                    </div>
-                  </div>
-                )}
+            {/* THE ATS WAR ROOM UI (Scrollable) */}
+            <div className="flex-1 flex flex-col items-center p-12 relative z-10 overflow-y-auto custom-scrollbar">
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="text-3xl font-black text-white tracking-widest shrink-0">ATS WAR ROOM</h2>
+                <div className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-mono">
+                  V2.1_TBF
+                </div>
               </div>
 
-              {/* RIGHT COLUMN: JOB DESC OR OPTIMIZED RESULT */}
-              <div className="flex flex-col h-[600px] perspective-1000">
-                {atsViewMode !== 'comparison' ? (
-                  <div className="relative group flex-1 h-full animate-in slide-in-from-right-8 duration-500">
-                    {/* DECORATIVE TERMINAL HEADER */}
-                    <div className="absolute -top-3 left-4 bg-[#0a0a0a] px-2 z-20 text-[10px] text-cyan-500/50 font-mono flex items-center gap-2">
-                      <span className="w-2 h-2 bg-cyan-500/50 rounded-full animate-pulse" />
-                      TARGET_PARAMETERS (JOB_DESCRIPTION)
-                    </div>
+              {/* ATS V2: SPLIT VIEW CONTROLLER */}
+              <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 shrink-0">
 
-                    <div className="absolute inset-0 bg-white/5 border border-white/10 rounded-2xl group-hover:border-white/20 transition-all overflow-hidden">
-                      {/* SCANLINES */}
-                      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%] opacity-20" />
+                {/* LEFT COLUMN: RESUME INPUT (Dynamic Modes) */}
+                <div className="flex flex-col h-[600px] perspective-1000">
+                  {atsViewMode === 'upload' && (
+                    <div className="flex-1 flex flex-col gap-6 animate-in slide-in-from-left-8 duration-500">
 
-                      <textarea
-                        className="w-full h-full bg-transparent p-6 text-cyan-100 font-mono text-xs leading-relaxed outline-none resize-none relative z-10 placeholder-cyan-900/50"
-                        placeholder="> PASTE TARGET JOB DESCRIPTION HERE..."
-                        value={jobDesc}
-                        onChange={(e) => setJobDesc(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col bg-emerald-950/10 border border-emerald-500/30 rounded-2xl overflow-hidden animate-in fade-in relative shadow-[0_0_30px_rgba(16,185,129,0.1)]">
-                    {/* DECRYPTED HEADER */}
-                    <div className="p-4 bg-emerald-500/10 border-b border-emerald-500/20 flex justify-between items-center backdrop-blur-md">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-xs font-bold text-emerald-400 tracking-widest">OPTIMIZED_PAYLOAD_DECRYPTED</span>
+                      {/* OPTION A: UPLOAD PDF (HOLOGRAPHIC DROP ZONE) */}
+                      <div className="relative group flex-1">
+                        <div className="absolute inset-0 bg-cyan-500/5 blur-xl group-hover:bg-cyan-500/10 transition-colors duration-500" />
+
+                        <div
+                          className={`relative h-full border border-dashed rounded-2xl transition-all duration-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden ${resumeFile ? 'border-cyan-500 bg-cyan-950/30' : 'border-white/20 bg-black/40 hover:border-cyan-500/50 hover:bg-cyan-900/10'}`}
+                          onDragOver={(e) => { e.preventDefault(); }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            const file = e.dataTransfer.files[0];
+                            handleFileUpload(file);
+                          }}
+                          onClick={() => document.getElementById('resume-upload')?.click()}
+                        >
+                          {/* SCANNER LINE */}
+                          {!resumeFile && (
+                            <motion.div
+                              className="absolute top-0 w-full h-[2px] bg-cyan-500 shadow-[0_0_15px_#22d3ee] z-10 opacity-0 group-hover:opacity-100"
+                              animate={{ top: ["0%", "100%"] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            />
+                          )}
+
+                          <input
+                            type="file"
+                            id="resume-upload"
+                            className="hidden"
+                            accept="application/pdf"
+                            onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
+                          />
+
+                          {resumeFile ? (
+                            <div className="text-center animate-in zoom-in relative z-20">
+                              <div className="w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                                <FileText size={40} className="text-cyan-400" />
+                              </div>
+                              <p className="text-white font-bold text-xl tracking-wide">{resumeFile.name}</p>
+                              <div className="flex items-center justify-center gap-2 mt-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                                <p className="text-cyan-400 text-xs font-mono tracking-widest">PDF_SECURE // READY_TO_SCAN</p>
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setResumeFile(null); setResumeBase64(null); }}
+                                className="mt-8 px-6 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-full border border-red-500/20 transition-all hover:scale-105"
+                              >
+                                TERMINATE_FILE
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="text-center relative z-20">
+                              <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/10 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10 transition-all duration-300">
+                                <Download size={32} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
+                              </div>
+                              <p className="text-slate-300 font-bold text-lg group-hover:text-white transition-colors tracking-wide">INITIALIZE UPLOAD</p>
+                              <p className="text-xs text-slate-500 mt-2 font-mono group-hover:text-cyan-500/70 transition-colors">DRAG_DROP_TARGET_ACQUIRED</p>
+                            </div>
+                          )}
+
+                          {/* CORNER ACCENTS */}
+                          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-white/10 group-hover:border-cyan-500/50 rounded-tl-lg transition-colors" />
+                          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-white/10 group-hover:border-cyan-500/50 rounded-tr-lg transition-colors" />
+                          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-white/10 group-hover:border-cyan-500/50 rounded-bl-lg transition-colors" />
+                          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-white/10 group-hover:border-cyan-500/50 rounded-br-lg transition-colors" />
+                        </div>
                       </div>
+
+                      {/* OPTION B: IMPORT FROM PORTFOLIO */}
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                        <div className="relative flex justify-center">
+                          <span className="bg-black/40 px-4 text-[10px] text-slate-500 font-mono backdrop-blur-md">ALTERNATE_INPUT_SOURCE</span>
+                        </div>
+                      </div>
+
                       <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(optimizedResume);
-                          alert("Copied to Clipboard!");
-                        }}
-                        className="px-3 py-1.5 bg-emerald-500/20 rounded text-[10px] text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 flex items-center gap-2 transition-all hover:scale-105"
+                        onClick={handleImportPortfolio}
+                        className="py-5 rounded-xl bg-gradient-to-r from-electric-purple/10 to-transparent border border-electric-purple/30 hover:border-electric-purple/60 text-white font-bold flex items-center justify-center gap-3 transition-all group hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]"
                       >
-                        <span className="text-emerald-500">📋</span> COPY_DATA
+                        <div className="p-1.5 bg-electric-purple/20 rounded text-electric-purple group-hover:text-white transition-colors">
+                          <Briefcase size={16} />
+                        </div>
+                        <span className="tracking-wide text-sm">IMPORT FROM PORTFOLIO HUB</span>
+                        <ArrowRight size={14} className="text-electric-purple/50 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
+                  )}
 
-                    <div className="flex-1 p-6 overflow-y-auto custom-scrollbar text-xs font-mono text-emerald-100 whitespace-pre-wrap leading-relaxed relative">
-                      {/* MATRIX RAIN EFFECT OVERLAY (Subtle) */}
-                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none" />
-
-                      {optimizedResume}
+                  {/* MODE: EDITOR (Raw Text) */}
+                  {atsViewMode === 'editor' && (
+                    <div className="flex-1 flex flex-col bg-black/40 border border-white/20 rounded-xl overflow-hidden animate-in fade-in">
+                      <div className="p-3 bg-white/5 border-b border-white/10 flex justify-between items-center">
+                        <span className="text-xs font-bold text-cyan-400">RESUME_TEXT_EDITOR</span>
+                        <button onClick={() => setAtsViewMode('upload')} className="text-[10px] text-slate-400 hover:text-white">CANCEL</button>
+                      </div>
+                      <textarea
+                        className="flex-1 bg-transparent p-4 text-xs font-mono text-slate-300 outline-none resize-none leading-relaxed"
+                        value={resumeText}
+                        onChange={(e) => setResumeText(e.target.value)}
+                        placeholder="Paste your raw resume text here..."
+                      />
                     </div>
+                  )}
 
-                    <div className="p-2 border-t border-emerald-500/20 bg-emerald-950/30 text-[9px] text-emerald-500/50 font-mono text-center">
-                      SECURE_CONNECTION // END_OF_TRANSMISSION
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ANALYZE BUTTON (LAUNCH CONTROL) */}
-            {atsViewMode !== 'comparison' ? (
-              <div className="flex gap-6 mt-12 w-full max-w-4xl justify-center">
-                <button
-                  onClick={handleAnalyzeMatch}
-                  disabled={isAnalyzing}
-                  className={`relative group px-16 py-6 rounded-sm font-black text-white transition-all overflow-hidden clip-path-polygon ${jobDesc ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-purple-600 hover:bg-purple-500'}`}
-                  style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
-                >
-                  <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(0,0,0,0.1)_10px,rgba(0,0,0,0.1)_20px)] opacity-20" />
-                  <div className="absolute top-0 left-0 w-2 h-2 bg-white/50" />
-                  <div className="absolute bottom-0 right-0 w-2 h-2 bg-white/50" />
-
-                  {isAnalyzing ? (
-                    <div className="flex items-center gap-3">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span className="tracking-[0.2em] text-sm">PROCESSING_DATA...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-4 relative z-10">
-                      <Scan size={24} className="group-hover:rotate-90 transition-transform duration-500" />
-                      <div className="text-left">
-                        <div className="text-[10px] opacity-70 font-mono tracking-widest mb-1">{jobDesc ? "TARGET_LOCKED" : "SYSTEM_READY"}</div>
-                        <div className="text-lg tracking-widest">{jobDesc ? "INITIATE_MATCH_ANALYSIS" : "EXECUTE_STRENGTH_AUDIT"}</div>
+                  {/* MODE: COMPARISON (Original) */}
+                  {atsViewMode === 'comparison' && (
+                    <div className="flex-1 flex flex-col bg-red-950/10 border border-red-500/30 rounded-xl overflow-hidden animate-in fade-in">
+                      <div className="p-3 bg-red-500/10 border-b border-red-500/20">
+                        <span className="text-xs font-bold text-red-400">ORIGINAL VERSION</span>
+                      </div>
+                      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar text-xs font-mono text-slate-400 whitespace-pre-wrap relative bg-[#0a0a0a]">
+                        {resumeText ? (
+                          resumeText
+                        ) : resumeFile && resumeBase64 ? (
+                          <div className="absolute inset-0 w-full h-full flex flex-col bg-[#111111]">
+                            <div className="absolute top-0 right-0 left-0 bg-gradient-to-b from-black/80 to-transparent p-2 flex justify-between items-center z-10 pointer-events-none">
+                              <span className="text-[10px] font-bold text-white/50 bg-black/50 px-2 py-1 rounded backdrop-blur-md border border-white/10">
+                                {resumeFile.name}
+                              </span>
+                              <span className="text-[10px] font-bold text-red-400/50 bg-red-950/30 px-2 py-1 rounded backdrop-blur-md border border-red-500/20">
+                                READ-ONLY
+                              </span>
+                            </div>
+                            <iframe
+                              src={`data:application/pdf;base64,${resumeBase64}#toolbar=0&navpanes=0&scrollbar=0`}
+                              className="w-full flex-1 border-none bg-white opacity-90 hover:opacity-100 transition-opacity"
+                              title="Original Resume PDF"
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-center mt-20 opacity-30 text-[10px] font-mono">NO CONTENT LOADED</div>
+                        )}
                       </div>
                     </div>
                   )}
-                </button>
+                </div>
 
-                {matchResult && (
+                {/* RIGHT COLUMN: JOB DESC OR OPTIMIZED RESULT */}
+                <div className="flex flex-col h-[600px] perspective-1000">
+                  {atsViewMode !== 'comparison' ? (
+                    <div className="relative group flex-1 h-full animate-in slide-in-from-right-8 duration-500">
+                      {/* DECORATIVE TERMINAL HEADER */}
+                      <div className="absolute -top-3 left-4 bg-[#0a0a0a] px-2 z-20 text-[10px] text-cyan-500/50 font-mono flex items-center gap-2">
+                        <span className="w-2 h-2 bg-cyan-500/50 rounded-full animate-pulse" />
+                        TARGET_PARAMETERS (JOB_DESCRIPTION)
+                      </div>
+
+                      <div className="absolute inset-0 bg-white/5 border border-white/10 rounded-2xl group-hover:border-white/20 transition-all overflow-hidden">
+                        {/* SCANLINES */}
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%] opacity-20" />
+
+                        <textarea
+                          className="w-full h-full bg-transparent p-6 text-cyan-100 font-mono text-xs leading-relaxed outline-none resize-none relative z-10 placeholder-cyan-900/50"
+                          placeholder="> PASTE TARGET JOB DESCRIPTION HERE..."
+                          value={jobDesc}
+                          onChange={(e) => setJobDesc(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col bg-emerald-950/10 border border-emerald-500/30 rounded-2xl overflow-hidden animate-in fade-in relative shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+                      {/* DECRYPTED HEADER */}
+                      <div className="p-4 bg-emerald-500/10 border-b border-emerald-500/20 flex justify-between items-center backdrop-blur-md">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                          <span className="text-xs font-bold text-emerald-400 tracking-widest">OPTIMIZED_PAYLOAD_DECRYPTED</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(optimizedResume);
+                            alert("Copied to Clipboard!");
+                          }}
+                          className="px-3 py-1.5 bg-emerald-500/20 rounded text-[10px] text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 flex items-center gap-2 transition-all hover:scale-105"
+                        >
+                          <span className="text-emerald-500">📋</span> COPY_DATA
+                        </button>
+                      </div>
+
+                      <div className="flex-1 p-6 overflow-y-auto custom-scrollbar text-xs font-mono text-emerald-100 whitespace-pre-wrap leading-relaxed relative">
+                        {/* MATRIX RAIN EFFECT OVERLAY (Subtle) */}
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none" />
+
+                        {optimizedResume}
+                      </div>
+
+                      <div className="p-2 border-t border-emerald-500/20 bg-emerald-950/30 text-[9px] text-emerald-500/50 font-mono text-center">
+                        SECURE_CONNECTION // END_OF_TRANSMISSION
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ANALYZE BUTTON (LAUNCH CONTROL) */}
+              {atsViewMode !== 'comparison' ? (
+                <div className="flex gap-6 mt-12 w-full max-w-4xl justify-center">
                   <button
-                    onClick={handleAutoOptimize}
-                    disabled={isOptimizing}
-                    className="relative group px-12 py-6 rounded-sm font-black text-black bg-emerald-400 hover:bg-emerald-300 transition-all overflow-hidden shadow-[0_0_40px_rgba(52,211,153,0.4)] hover:shadow-[0_0_60px_rgba(52,211,153,0.6)]"
-                    style={{ clipPath: "polygon(0 0, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0 70%)" }}
+                    onClick={handleAnalyzeMatch}
+                    disabled={isAnalyzing}
+                    className={`relative group px-16 py-6 rounded-sm font-black text-white transition-all overflow-hidden clip-path-polygon ${jobDesc ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-purple-600 hover:bg-purple-500'}`}
+                    style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
                   >
-                    {isOptimizing ? (
+                    <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(0,0,0,0.1)_10px,rgba(0,0,0,0.1)_20px)] opacity-20" />
+                    <div className="absolute top-0 left-0 w-2 h-2 bg-white/50" />
+                    <div className="absolute bottom-0 right-0 w-2 h-2 bg-white/50" />
+
+                    {isAnalyzing ? (
                       <div className="flex items-center gap-3">
-                        <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                        <span className="tracking-[0.2em] text-sm">REWRITING_MEMORY...</span>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="tracking-[0.2em] text-sm">PROCESSING_DATA...</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-4 relative z-10">
-                        <Sparkles size={24} className="animate-pulse" />
+                        <Scan size={24} className="group-hover:rotate-90 transition-transform duration-500" />
                         <div className="text-left">
-                          <div className="text-[10px] opacity-70 font-mono tracking-widest mb-1">AI_OVERWRITE_ENABLED</div>
-                          <div className="text-lg tracking-widest">AUTO_OPTIMIZE_CORE</div>
+                          <div className="text-[10px] opacity-70 font-mono tracking-widest mb-1">{jobDesc ? "TARGET_LOCKED" : "SYSTEM_READY"}</div>
+                          <div className="text-lg tracking-widest">{jobDesc ? "INITIATE_MATCH_ANALYSIS" : "EXECUTE_STRENGTH_AUDIT"}</div>
                         </div>
                       </div>
                     )}
                   </button>
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={() => setAtsViewMode('upload')}
-                className="mt-8 px-12 py-4 rounded-full font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all backdrop-blur-md"
-              >
-                Start New Session
-              </button>
-            )}
 
-            {/* RESULTS DISPLAY */}
-            {matchResult && (
-              <div className="mt-12 w-full max-w-4xl bg-gray-900/90 border border-gray-700 backdrop-blur-xl rounded-3xl p-8 animate-in slide-in-from-bottom-8 duration-700 shadow-2xl mb-24">
-
-                {/* HEADER: SCORE */}
-                <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">
-                      {jobDesc ? "ATS COMPATIBILITY SCORE" : "RESUME STRENGTH SCORE"}
-                    </h3>
-                    <p className="text-slate-400 text-xs tracking-widest">
-                      ALGORITHM: {jobDesc ? "SEARCH_RANK_V9" : "IMPACT_AUDIT_V2"}
-                    </p>
-                  </div>
-                  <div className={`text-6xl font-black ${matchResult.matchScore > 75 ? 'text-green-500 drop-shadow-[0_0_20px_rgba(34,197,94,0.5)]' : 'text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]'}`}>
-                    {matchResult.matchScore}%
-                  </div>
+                  {matchResult && (
+                    <button
+                      onClick={handleAutoOptimize}
+                      disabled={isOptimizing}
+                      className="relative group px-12 py-6 rounded-sm font-black text-black bg-emerald-400 hover:bg-emerald-300 transition-all overflow-hidden shadow-[0_0_40px_rgba(52,211,153,0.4)] hover:shadow-[0_0_60px_rgba(52,211,153,0.6)]"
+                      style={{ clipPath: "polygon(0 0, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0 70%)" }}
+                    >
+                      {isOptimizing ? (
+                        <div className="flex items-center gap-3">
+                          <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                          <span className="tracking-[0.2em] text-sm">REWRITING_MEMORY...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4 relative z-10">
+                          <Sparkles size={24} className="animate-pulse" />
+                          <div className="text-left">
+                            <div className="text-[10px] opacity-70 font-mono tracking-widest mb-1">AI_OVERWRITE_ENABLED</div>
+                            <div className="text-lg tracking-widest">AUTO_OPTIMIZE_CORE</div>
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  )}
                 </div>
-
-                {/* MISSING KEYWORDS / FLAWS */}
-                <div className="mb-8 p-6 bg-red-500/5 border border-red-500/20 rounded-2xl">
-                  <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Shield size={14} />
-                    {jobDesc ? "CRITICAL KEYWORD GAPS" : "CRITICAL RESUME FLAWS"}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {matchResult.missingKeywords.map((kw: string, i: number) => (
-                      <span key={i} className="px-3 py-1 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm font-mono">
-                        {kw}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* BOARD ADVICE */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                  <div className="p-4 bg-red-950/20 border border-red-500/20 rounded-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-2 opacity-50"><Activity size={100} className="text-red-500/10" /></div>
-                    <div className="text-red-500 font-bold text-xs mb-2 tracking-widest">TITAN (CEO) SAYS:</div>
-                    <p className="text-gray-300 text-sm italic relative z-10">"{matchResult.titanAdvice}"</p>
-                  </div>
-                  <div className="p-4 bg-cyan-950/20 border border-cyan-500/20 rounded-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-2 opacity-50"><Sparkles size={100} className="text-cyan-500/10" /></div>
-                    <div className="text-cyan-500 font-bold text-xs mb-2 tracking-widest">NOVA (TECH) SAYS:</div>
-                    <p className="text-gray-300 text-sm italic relative z-10">"{matchResult.novaAdvice}"</p>
-                  </div>
-                  <div className="p-4 bg-green-950/20 border border-green-500/20 rounded-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-2 opacity-50"><User size={100} className="text-green-500/10" /></div>
-                    <div className="text-green-500 font-bold text-xs mb-2 tracking-widest">ZEN (COACH) SAYS:</div>
-                    <p className="text-gray-300 text-sm italic relative z-10">"{matchResult.zenAdvice}"</p>
-                  </div>
-                </div>
-
-                {/* DETAILED SUGGESTIONS (NEW) */}
-                {matchResult.detailedSuggestions && (
-                  <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
-                    <p className="text-blue-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <Zap size={14} /> TACTICAL IMPROVEMENT PLAN
-                    </p>
-                    <ul className="space-y-3">
-                      {matchResult.detailedSuggestions.map((suggestion: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3 text-slate-300 text-sm">
-                          <span className="mt-1 text-blue-500">➤</span>
-                          {suggestion}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* --- VIEW 3: SKILL GAP CIRCUIT --- */}
-      {activeView === 'skill-gap' && (
-        <React.Suspense fallback={<div className="text-white">Loading Neural Map...</div>}>
-          <SkillGapAnalysis
-            userSkills={portfolioData.skills}
-            targetRole="Full Stack Cloud Architect"
-            onClose={() => setActiveView('dashboard')}
-          />
-        </React.Suspense>
-      )}
-
-      {activeView === 'portfolio' && (
-        <PortfolioHub
-          portfolioData={portfolioData}
-          setPortfolioData={setPortfolioData}
-          setActiveView={setActiveView}
-          resumeBase64={resumeBase64}
-        />
-      )}
-
-      {/* --- VIEW 7: COURSES HUB --- */}
-      {activeView === 'courses' && (
-        <CoursesHub />
-      )}
-
-      {/* --- VIEW 6: THE SYNAPTIC BOARDROOM (PRO MODE) --- */}
-      {activeView === 'genesis' && (
-        <React.Suspense fallback={<div className="text-white">Initializing Architect...</div>}>
-          <GenesisArchitect
-            genesisIdea={genesisIdea}
-            setGenesisIdea={setGenesisIdea}
-            handleGenesisStart={handleGenesisStart}
-            isArchitecting={isArchitecting}
-            genesisPlan={genesisPlan}
-            onClose={() => setActiveView('dashboard')}
-            onReset={() => {
-              setGenesisPlan(null);
-              setGenesisIdea("");
-              setIsArchitecting(false);
-            }}
-          />
-        </React.Suspense>
-      )}
-
-      {activeView === 'mentor' && (
-        <div className="h-screen w-full bg-black/20 flex flex-col relative overflow-hidden animate-in fade-in">
-
-          {/* 1. BACKGROUND LAYERS */}
-          <div className="absolute inset-0 z-0">
-
-            <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.03)_0%,transparent_70%)]" />
-          </div>
-
-          {/* 2. STATUS HUD */}
-          <div className="absolute top-6 right-6 z-50 flex items-center gap-3 animate-in slide-in-from-top-4">
-            <div className="px-3 py-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]"></div>
-              <span className="text-[9px] text-green-400 font-mono tracking-widest">UPLINK_STABLE</span>
-            </div>
-            <div className="px-3 py-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
-              <Activity size={10} className="text-cyan-500" />
-              <span className="text-[9px] text-cyan-400 font-mono tracking-widest">LATENCY: 12ms</span>
-            </div>
-          </div>
-
-          {/* 3. CENTER STAGE (DISPLAY AREA) */}
-          <div className="flex-1 flex flex-col items-center justify-center relative z-10 px-8 pb-32">
-
-            {/* HEADER */}
-            <div className="mb-12 text-center">
-              <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 tracking-tight mb-2 flex items-center justify-center gap-3">
-                <BrainCircuit className="text-cyan-500" size={40} />
-                SYNAPTIC BOARDROOM
-              </h2>
-              <div className="flex items-center justify-center gap-2 text-xs font-mono text-cyan-500/60 uppercase tracking-[0.3em]">
-                <span className="w-8 h-px bg-cyan-500/30" />
-                Personal Advisory Council
-                <span className="w-8 h-px bg-cyan-500/30" />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-8 w-full max-w-6xl">
-              {isThinking ? (
-                <div className="flex flex-col items-center justify-center">
-                  <div className="relative w-32 h-32 flex items-center justify-center">
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border-t-2 border-cyan-500 border-r-2 border-transparent border-b-2 border-purple-500 border-l-2 border-transparent" />
-                    <motion.div animate={{ rotate: -360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute inset-4 rounded-full border-t-2 border-purple-500 border-r-2 border-transparent border-b-2 border-cyan-500 border-l-2 border-transparent opacity-50" />
-                    <div className="text-2xl">🧠</div>
-                  </div>
-                  <p className="mt-6 text-cyan-400 font-mono text-xs tracking-[0.2em] animate-pulse">ESTABLISHING NEURAL LINK...</p>
-                </div>
-              ) : boardResponse ? (
-                <>
-                  {/* TITAN CARD */}
-                  <div className="flex-1 h-[400px] relative group perspective-1000 animate-in slide-in-from-bottom-8 duration-500">
-                    <div className="absolute inset-0 bg-red-500/5 blur-3xl opacity-0 group-hover:opacity-20 transition-opacity" />
-                    <div className="h-full bg-black/40 backdrop-blur-xl border-t border-white/10 border-b border-white/5 border-x border-white/5 rounded-2xl p-8 flex flex-col relative overflow-hidden hover:border-red-500/30 transition-colors shadow-2xl">
-                      {/* Scanline */}
-                      <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,#000000_3px)] opacity-20" />
-
-                      <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
-                        <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20 text-red-500">
-                          <Briefcase size={20} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-white">TITAN</h3>
-                          <p className="text-[10px] text-red-500 font-mono tracking-widest">EXECUTIVE_AI</p>
-                        </div>
-                      </div>
-                      <p className="text-slate-300 text-sm leading-relaxed flex-1 font-light italic overflow-y-auto custom-scrollbar pr-2">"{boardResponse.titan}"</p>
-                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-500 font-mono">
-                        <span>STRATEGY_CORE</span>
-                        <span className="text-red-500">● ONLINE</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* NOVA CARD (Center) */}
-                  <div className="flex-1 h-[440px] -mt-8 relative group perspective-1000 animate-in slide-in-from-bottom-8 duration-700 delay-100 z-10">
-                    <div className="absolute inset-0 bg-cyan-500/10 blur-3xl opacity-0 group-hover:opacity-30 transition-opacity" />
-                    <div className="h-full bg-gradient-to-b from-cyan-950/30 to-black/60 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl p-8 flex flex-col relative overflow-hidden hover:border-cyan-400/50 transition-colors shadow-[0_0_50px_rgba(6,182,212,0.1)]">
-                      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
-
-                      <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
-                        <div className="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400">
-                          <Sparkles size={24} />
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold text-white">NOVA</h3>
-                          <p className="text-[10px] text-cyan-400 font-mono tracking-widest">FUTURIST_AI</p>
-                        </div>
-                      </div>
-                      <p className="text-cyan-50 text-sm leading-relaxed flex-1 font-light italic overflow-y-auto custom-scrollbar pr-2">"{boardResponse.nova}"</p>
-                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-500 font-mono">
-                        <span>INNOVATION_CORE</span>
-                        <span className="text-cyan-400">● ONLINE</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ZEN CARD */}
-                  <div className="flex-1 h-[400px] relative group perspective-1000 animate-in slide-in-from-bottom-8 duration-500 delay-200">
-                    <div className="absolute inset-0 bg-green-500/5 blur-3xl opacity-0 group-hover:opacity-20 transition-opacity" />
-                    <div className="h-full bg-black/40 backdrop-blur-xl border-t border-white/10 border-b border-white/5 border-x border-white/5 rounded-2xl p-8 flex flex-col relative overflow-hidden hover:border-green-500/30 transition-colors shadow-2xl">
-                      <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,#000000_3px)] opacity-20" />
-
-                      <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
-                        <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-500">
-                          <User size={20} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-white">ZEN</h3>
-                          <p className="text-[10px] text-green-500 font-mono tracking-widest">COACH_AI</p>
-                        </div>
-                      </div>
-                      <p className="text-slate-300 text-sm leading-relaxed flex-1 font-light italic overflow-y-auto custom-scrollbar pr-2">"{boardResponse.zen}"</p>
-                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-500 font-mono">
-                        <span>HUMAN_CORE</span>
-                        <span className="text-green-500">● ONLINE</span>
-                      </div>
-                    </div>
-                  </div>
-                </>
               ) : (
-                /* EMPTY STATE: NEURAL CORE ANIMATION */
-                <div className="flex flex-col items-center justify-center opacity-80 mt-12">
-                  <div className="relative w-64 h-64 flex items-center justify-center">
-                    {/* Rotating Rings */}
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute inset-0 border border-white/10 rounded-full border-dashed" />
-                    <motion.div animate={{ rotate: -360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute inset-12 border border-cyan-500/20 rounded-full border-dashed" />
-                    <motion.div animate={{ rotate: 180 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-24 border border-purple-500/20 rounded-full" />
+                <button
+                  onClick={() => setAtsViewMode('upload')}
+                  className="mt-8 px-12 py-4 rounded-full font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all backdrop-blur-md"
+                >
+                  Start New Session
+                </button>
+              )}
 
-                    {/* Core Pulse */}
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-                      transition={{ duration: 4, repeat: Infinity }}
-                      className="w-20 h-20 bg-cyan-500/10 rounded-full blur-xl absolute"
-                    />
-                    <div className="relative z-10 p-6 bg-black/50 backdrop-blur-md rounded-full border border-white/10 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-                      <BrainCircuit size={48} className="text-white" />
+              {/* RESULTS DISPLAY */}
+              {matchResult && (
+                <div className="mt-12 w-full max-w-4xl bg-gray-900/90 border border-gray-700 backdrop-blur-xl rounded-3xl p-8 animate-in slide-in-from-bottom-8 duration-700 shadow-2xl mb-24">
+
+                  {/* HEADER: SCORE */}
+                  <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-1">
+                        {jobDesc ? "ATS COMPATIBILITY SCORE" : "RESUME STRENGTH SCORE"}
+                      </h3>
+                      <p className="text-slate-400 text-xs tracking-widest">
+                        ALGORITHM: {jobDesc ? "SEARCH_RANK_V9" : "IMPACT_AUDIT_V2"}
+                      </p>
+                    </div>
+                    <div className={`text-6xl font-black ${matchResult.matchScore > 75 ? 'text-green-500 drop-shadow-[0_0_20px_rgba(34,197,94,0.5)]' : 'text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]'}`}>
+                      {matchResult.matchScore}%
                     </div>
                   </div>
-                  <p className="text-slate-500 font-mono text-xs tracking-[0.2em] mt-8 uppercase">Awaiting Query Sequence...</p>
+
+                  {/* MISSING KEYWORDS / FLAWS */}
+                  <div className="mb-8 p-6 bg-red-500/5 border border-red-500/20 rounded-2xl">
+                    <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Shield size={14} />
+                      {jobDesc ? "CRITICAL KEYWORD GAPS" : "CRITICAL RESUME FLAWS"}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {matchResult.missingKeywords.map((kw: string, i: number) => (
+                        <span key={i} className="px-3 py-1 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg text-sm font-mono">
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* BOARD ADVICE */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div className="p-4 bg-red-950/20 border border-red-500/20 rounded-xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-2 opacity-50"><Activity size={100} className="text-red-500/10" /></div>
+                      <div className="text-red-500 font-bold text-xs mb-2 tracking-widest">TITAN (CEO) SAYS:</div>
+                      <p className="text-gray-300 text-sm italic relative z-10">"{matchResult.titanAdvice}"</p>
+                    </div>
+                    <div className="p-4 bg-cyan-950/20 border border-cyan-500/20 rounded-xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-2 opacity-50"><Sparkles size={100} className="text-cyan-500/10" /></div>
+                      <div className="text-cyan-500 font-bold text-xs mb-2 tracking-widest">NOVA (TECH) SAYS:</div>
+                      <p className="text-gray-300 text-sm italic relative z-10">"{matchResult.novaAdvice}"</p>
+                    </div>
+                    <div className="p-4 bg-green-950/20 border border-green-500/20 rounded-xl relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-2 opacity-50"><User size={100} className="text-green-500/10" /></div>
+                      <div className="text-green-500 font-bold text-xs mb-2 tracking-widest">ZEN (COACH) SAYS:</div>
+                      <p className="text-gray-300 text-sm italic relative z-10">"{matchResult.zenAdvice}"</p>
+                    </div>
+                  </div>
+
+                  {/* DETAILED SUGGESTIONS (NEW) */}
+                  {matchResult.detailedSuggestions && (
+                    <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+                      <p className="text-blue-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <Zap size={14} /> TACTICAL IMPROVEMENT PLAN
+                      </p>
+                      <ul className="space-y-3">
+                        {matchResult.detailedSuggestions.map((suggestion: string, i: number) => (
+                          <li key={i} className="flex items-start gap-3 text-slate-300 text-sm">
+                            <span className="mt-1 text-blue-500">➤</span>
+                            {suggestion}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                 </div>
               )}
             </div>
-
           </div>
+        )
+      }
 
-          {/* 4. INPUT CONSOLE (CYBERPUNK STYLE) */}
-          <div className="absolute bottom-0 left-0 w-full z-20">
-            <div className="bg-gradient-to-t from-black via-black/90 to-transparent pb-8 pt-20 px-8">
-              <div className="max-w-3xl mx-auto relative group">
-                {/* Glow Effect */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-cyan-500/20 rounded-full blur opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+      {/* --- VIEW 3: SKILL GAP CIRCUIT --- */}
+      {
+        activeView === 'skill-gap' && (
+          <React.Suspense fallback={<div className="text-white">Loading Neural Map...</div>}>
+            <SkillGapAnalysis
+              userSkills={portfolioData.skills}
+              targetRole="Full Stack Cloud Architect"
+              onClose={() => setActiveView('dashboard')}
+            />
+          </React.Suspense>
+        )
+      }
 
-                <div className="relative bg-[#0a0a0a] border border-white/10 rounded-full flex items-center p-2 shadow-2xl overflow-hidden">
-                  {/* Audio Viz Decor */}
-                  <div className="pl-6 pr-4 flex items-center gap-1 opacity-50">
-                    {[...Array(5)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        animate={{ height: [10, 20, 10] }}
-                        transition={{ duration: 0.5 + Math.random(), repeat: Infinity }}
-                        className="w-1 bg-cyan-500/50 rounded-full h-4"
-                      />
-                    ))}
-                  </div>
+      {
+        activeView === 'portfolio' && (
+          <PortfolioHub
+            portfolioData={portfolioData}
+            setPortfolioData={setPortfolioData}
+            setActiveView={setActiveView}
+            resumeBase64={resumeBase64}
+          />
+        )
+      }
 
-                  <input
-                    type="text"
-                    value={userQuery}
-                    onChange={(e) => setUserQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleConsultation()}
-                    placeholder="Consult the neural board..."
-                    className="flex-1 bg-transparent border-none outline-none text-white font-mono text-sm h-12 placeholder:text-slate-600"
-                  />
+      {/* --- VIEW 7: COURSES HUB --- */}
+      {
+        activeView === 'courses' && (
+          <CoursesHub />
+        )
+      }
 
-                  <button
-                    onClick={handleConsultation}
-                    disabled={!userQuery || isThinking}
-                    className="px-8 py-3 bg-white text-black font-bold rounded-full text-xs tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isThinking ? 'PROCESSING' : 'EXECUTE'}
-                  </button>
+      {/* --- VIEW 6: THE SYNAPTIC BOARDROOM (PRO MODE) --- */}
+      {
+        activeView === 'genesis' && (
+          <React.Suspense fallback={<div className="text-white">Initializing Architect...</div>}>
+            <GenesisArchitect
+              genesisIdea={genesisIdea}
+              setGenesisIdea={setGenesisIdea}
+              handleGenesisStart={handleGenesisStart}
+              isArchitecting={isArchitecting}
+              genesisPlan={genesisPlan}
+              onClose={() => setActiveView('dashboard')}
+              onReset={() => {
+                setGenesisPlan(null);
+                setGenesisIdea("");
+                setIsArchitecting(false);
+              }}
+            />
+          </React.Suspense>
+        )
+      }
+
+      {
+        activeView === 'mentor' && (
+          <div className="h-screen w-full bg-black/20 flex flex-col relative overflow-hidden animate-in fade-in">
+
+            {/* 1. BACKGROUND LAYERS */}
+            <div className="absolute inset-0 z-0">
+
+              <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.03)_0%,transparent_70%)]" />
+            </div>
+
+            {/* 2. STATUS HUD */}
+            <div className="absolute top-6 right-6 z-50 flex items-center gap-3 animate-in slide-in-from-top-4">
+              <div className="px-3 py-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]"></div>
+                <span className="text-[9px] text-green-400 font-mono tracking-widest">UPLINK_STABLE</span>
+              </div>
+              <div className="px-3 py-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
+                <Activity size={10} className="text-cyan-500" />
+                <span className="text-[9px] text-cyan-400 font-mono tracking-widest">LATENCY: 12ms</span>
+              </div>
+            </div>
+
+            {/* 3. CENTER STAGE (DISPLAY AREA) */}
+            <div className="flex-1 flex flex-col items-center justify-center relative z-10 px-8 pb-32">
+
+              {/* HEADER */}
+              <div className="mb-12 text-center">
+                <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 tracking-tight mb-2 flex items-center justify-center gap-3">
+                  <BrainCircuit className="text-cyan-500" size={40} />
+                  SYNAPTIC BOARDROOM
+                </h2>
+                <div className="flex items-center justify-center gap-2 text-xs font-mono text-cyan-500/60 uppercase tracking-[0.3em]">
+                  <span className="w-8 h-px bg-cyan-500/30" />
+                  Personal Advisory Council
+                  <span className="w-8 h-px bg-cyan-500/30" />
                 </div>
-                <div className="mt-2 text-center">
-                  <p className="text-[9px] text-slate-600 font-mono tracking-widest uppercase">
-                    Secured via Quantum Encryption // Protocol V.2.0
-                  </p>
+              </div>
+
+              <div className="flex items-center justify-center gap-8 w-full max-w-6xl">
+                {isThinking ? (
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="relative w-32 h-32 flex items-center justify-center">
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border-t-2 border-cyan-500 border-r-2 border-transparent border-b-2 border-purple-500 border-l-2 border-transparent" />
+                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute inset-4 rounded-full border-t-2 border-purple-500 border-r-2 border-transparent border-b-2 border-cyan-500 border-l-2 border-transparent opacity-50" />
+                      <div className="text-2xl">🧠</div>
+                    </div>
+                    <p className="mt-6 text-cyan-400 font-mono text-xs tracking-[0.2em] animate-pulse">ESTABLISHING NEURAL LINK...</p>
+                  </div>
+                ) : boardResponse ? (
+                  <>
+                    {/* TITAN CARD */}
+                    <div className="flex-1 h-[400px] relative group perspective-1000 animate-in slide-in-from-bottom-8 duration-500">
+                      <div className="absolute inset-0 bg-red-500/5 blur-3xl opacity-0 group-hover:opacity-20 transition-opacity" />
+                      <div className="h-full bg-black/40 backdrop-blur-xl border-t border-white/10 border-b border-white/5 border-x border-white/5 rounded-2xl p-8 flex flex-col relative overflow-hidden hover:border-red-500/30 transition-colors shadow-2xl">
+                        {/* Scanline */}
+                        <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,#000000_3px)] opacity-20" />
+
+                        <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                          <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center border border-red-500/20 text-red-500">
+                            <Briefcase size={20} />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-white">TITAN</h3>
+                            <p className="text-[10px] text-red-500 font-mono tracking-widest">EXECUTIVE_AI</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-300 text-sm leading-relaxed flex-1 font-light italic overflow-y-auto custom-scrollbar pr-2">"{boardResponse.titan}"</p>
+                        <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                          <span>STRATEGY_CORE</span>
+                          <span className="text-red-500">● ONLINE</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* NOVA CARD (Center) */}
+                    <div className="flex-1 h-[440px] -mt-8 relative group perspective-1000 animate-in slide-in-from-bottom-8 duration-700 delay-100 z-10">
+                      <div className="absolute inset-0 bg-cyan-500/10 blur-3xl opacity-0 group-hover:opacity-30 transition-opacity" />
+                      <div className="h-full bg-gradient-to-b from-cyan-950/30 to-black/60 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl p-8 flex flex-col relative overflow-hidden hover:border-cyan-400/50 transition-colors shadow-[0_0_50px_rgba(6,182,212,0.1)]">
+                        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-50" />
+
+                        <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                          <div className="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400">
+                            <Sparkles size={24} />
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-bold text-white">NOVA</h3>
+                            <p className="text-[10px] text-cyan-400 font-mono tracking-widest">FUTURIST_AI</p>
+                          </div>
+                        </div>
+                        <p className="text-cyan-50 text-sm leading-relaxed flex-1 font-light italic overflow-y-auto custom-scrollbar pr-2">"{boardResponse.nova}"</p>
+                        <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                          <span>INNOVATION_CORE</span>
+                          <span className="text-cyan-400">● ONLINE</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ZEN CARD */}
+                    <div className="flex-1 h-[400px] relative group perspective-1000 animate-in slide-in-from-bottom-8 duration-500 delay-200">
+                      <div className="absolute inset-0 bg-green-500/5 blur-3xl opacity-0 group-hover:opacity-20 transition-opacity" />
+                      <div className="h-full bg-black/40 backdrop-blur-xl border-t border-white/10 border-b border-white/5 border-x border-white/5 rounded-2xl p-8 flex flex-col relative overflow-hidden hover:border-green-500/30 transition-colors shadow-2xl">
+                        <div className="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,#000000_3px)] opacity-20" />
+
+                        <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
+                          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-500">
+                            <User size={20} />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-white">ZEN</h3>
+                            <p className="text-[10px] text-green-500 font-mono tracking-widest">COACH_AI</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-300 text-sm leading-relaxed flex-1 font-light italic overflow-y-auto custom-scrollbar pr-2">"{boardResponse.zen}"</p>
+                        <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                          <span>HUMAN_CORE</span>
+                          <span className="text-green-500">● ONLINE</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* EMPTY STATE: NEURAL CORE ANIMATION */
+                  <div className="flex flex-col items-center justify-center opacity-80 mt-12">
+                    <div className="relative w-64 h-64 flex items-center justify-center">
+                      {/* Rotating Rings */}
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute inset-0 border border-white/10 rounded-full border-dashed" />
+                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute inset-12 border border-cyan-500/20 rounded-full border-dashed" />
+                      <motion.div animate={{ rotate: 180 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute inset-24 border border-purple-500/20 rounded-full" />
+
+                      {/* Core Pulse */}
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+                        transition={{ duration: 4, repeat: Infinity }}
+                        className="w-20 h-20 bg-cyan-500/10 rounded-full blur-xl absolute"
+                      />
+                      <div className="relative z-10 p-6 bg-black/50 backdrop-blur-md rounded-full border border-white/10 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                        <BrainCircuit size={48} className="text-white" />
+                      </div>
+                    </div>
+                    <p className="text-slate-500 font-mono text-xs tracking-[0.2em] mt-8 uppercase">Awaiting Query Sequence...</p>
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* 4. INPUT CONSOLE (CYBERPUNK STYLE) */}
+            <div className="absolute bottom-0 left-0 w-full z-20">
+              <div className="bg-gradient-to-t from-black via-black/90 to-transparent pb-8 pt-20 px-8">
+                <div className="max-w-3xl mx-auto relative group">
+                  {/* Glow Effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-cyan-500/20 rounded-full blur opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  <div className="relative bg-[#0a0a0a] border border-white/10 rounded-full flex items-center p-2 shadow-2xl overflow-hidden">
+                    {/* Audio Viz Decor */}
+                    <div className="pl-6 pr-4 flex items-center gap-1 opacity-50">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{ height: [10, 20, 10] }}
+                          transition={{ duration: 0.5 + Math.random(), repeat: Infinity }}
+                          className="w-1 bg-cyan-500/50 rounded-full h-4"
+                        />
+                      ))}
+                    </div>
+
+                    <input
+                      type="text"
+                      value={userQuery}
+                      onChange={(e) => setUserQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleConsultation()}
+                      placeholder="Consult the neural board..."
+                      className="flex-1 bg-transparent border-none outline-none text-white font-mono text-sm h-12 placeholder:text-slate-600"
+                    />
+
+                    <button
+                      onClick={handleConsultation}
+                      disabled={!userQuery || isThinking}
+                      className="px-8 py-3 bg-white text-black font-bold rounded-full text-xs tracking-widest hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isThinking ? 'PROCESSING' : 'EXECUTE'}
+                    </button>
+                  </div>
+                  <div className="mt-2 text-center">
+                    <p className="text-[9px] text-slate-600 font-mono tracking-widest uppercase">
+                      Secured via Quantum Encryption // Protocol V.2.0
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-        </div>
-      )}
+          </div>
+        )
+      }
 
       {/* ===================================================================================== */}
       {/* 🧪 AI ASSESSMENTS TAB ( The Interview Simulator ) */}

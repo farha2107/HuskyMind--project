@@ -25,7 +25,11 @@ import { LogOut } from "lucide-react";
 
 export default function NavigationDock({ activeView, setActiveView }: { activeView: string, setActiveView: (view: string) => void }) {
     const { level, rank, xp, streak, levelProgress } = useUserProgress();
-    const { clearApiKey } = useApiKey();
+    const { clearApiKey, userName, updateUserName } = useApiKey();
+
+    // Local State for Editing Name
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState(userName);
 
     const handleLogout = () => {
         if (confirm("Disconnect Neural Link? This will clear your API Key from local storage.")) {
@@ -109,13 +113,39 @@ export default function NavigationDock({ activeView, setActiveView }: { activeVi
 
             {/* Sidebar Footer / User Profile */}
             <div className="p-4 border-t border-white/5 space-y-2">
-                <div className="glass-panel p-3 rounded-xl flex items-center gap-3 border border-white/5 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+                <div
+                    className="glass-panel p-3 rounded-xl flex items-center gap-3 border border-white/5 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
+                    onClick={() => !isEditingName && setIsEditingName(true)}
+                >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-white/10 to-white/5 flex items-center justify-center border border-white/10">
                         <User size={14} className="text-white/60 group-hover:text-white" />
                     </div>
-                    <div className="flex-1">
-                        <div className="text-xs font-bold text-white">Alex Student</div>
-                        <div className="text-[9px] text-neon-cyan font-mono">:: ONLINE</div>
+                    <div className="flex-1 overflow-hidden">
+                        {isEditingName ? (
+                            <input
+                                autoFocus
+                                type="text"
+                                className="w-full bg-transparent border-b border-neon-cyan text-xs font-bold text-white focus:outline-none"
+                                value={tempName}
+                                onChange={(e) => setTempName(e.target.value)}
+                                onBlur={() => {
+                                    updateUserName(tempName || "User");
+                                    setIsEditingName(false);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        updateUserName(tempName || "User");
+                                        setIsEditingName(false);
+                                    }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        ) : (
+                            <>
+                                <div className="text-xs font-bold text-white truncate">{userName}</div>
+                                <div className="text-[9px] text-neon-cyan font-mono">:: ONLINE</div>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -123,7 +153,7 @@ export default function NavigationDock({ activeView, setActiveView }: { activeVi
                     onClick={handleLogout}
                     className="w-full flex items-center justify-center gap-2 p-2 text-[10px] text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors border border-transparent hover:border-red-500/20"
                 >
-                    <LogOut size={12} /> Disconnect Key
+                    <LogOut size={12} /> Logout
                 </button>
             </div>
         </aside>
